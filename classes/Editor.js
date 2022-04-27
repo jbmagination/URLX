@@ -187,7 +187,7 @@ class Editor {
             this.game.conductor.organizeBPMChanges()
             this.drawChart()
         }
-        this.conductor.updateActionSecs()
+        this.game.conductor.updateActionSecs()
         this.updateSongInfo()
     }
 
