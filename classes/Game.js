@@ -135,7 +135,7 @@ class Game {
 
         let arrow = foundArrow.arrow
         let isArrow = !arrow.match(/[^\^v<>]/g)
-        if (!ignoreControlScheme) switch (PLAYERSETTINGS.controlScheme) {
+        if (!ignoreControlScheme && PLAYERSETTINGS.changeArrowsToControls) switch (PLAYERSETTINGS.controlScheme) {
             case "onebutton": if (arrow != "x") arrow = "o"; break;
             case "anyarrow": if (isArrow) arrow = "+"; break;
             case "twoarrow":
@@ -243,9 +243,9 @@ class Game {
         let logObj = {
             "Hits": hits,
             "Misses": misses,
-            "Accuracy": (misses < 1 ? 100 : Number((hits / (hits + misses) * 100).toFixed(2))) + "%",
+            "Accuracy": (misses < 1 ? 100 : fixed((hits / (hits + misses) * 100), 2)) + "%",
             "Average Offset": offsetNotes.length ? Number((offsetNotes.map(x => x.accuracy).reduce((a, b) => a + b, 0) / offsetNotes.length * 1000).toFixed(2)) + " ms" : "-",
-            "Last Note Offset": lastOffset ? Number((lastOffset.accuracy * 1000).toFixed(2)) + " ms" : "-"
+            "Last Note Offset": lastOffset ? fixed((lastOffset.accuracy * 1000), 2) + " ms" : "-"
         }
 
         $('#gameplayStats').html(Object.entries(logObj).map(x => `<p><b>${x[0]}</b>: ${x[1]}</p>`))
@@ -266,7 +266,11 @@ class Game {
                 bpm: this.conductor.bpmChanges[0].bpm,
                 subdivision: this.conductor.subdivisionChanges[0].subdivision,
             },
-            notes: this.notes.map(x => ({beat: x.beat, arrow: x.arrow})),
+            notes: this.notes.map(x => {
+                let noteObj = {beat: x.beat, arrow: x.arrow}
+                if (x.auto) noteObj.auto = true
+                return noteObj
+            }),
             actions: gameActions.sort((a, b) => a.beat - b.beat)
         }
 

@@ -5,22 +5,25 @@ let gameImportData = [
         hover: "Samurai.",
         filestring: ".rdlevel file",
         filetypes: [".rdlevel"],
-        details: "All 'hits' in the level will be charted as spacebar presses. Beatsounds are ignored.",
+        details: "All 'hits' in the level will be charted as spacebar presses.",
         settings: [
             {
                 name: "Also chart oneshot pulses (oneshot rows)",
                 id: "oneshotpulses",
-                type: "bool"
+                type: "bool",
+                checked: true
             },
             {
                 name: "Also chart classic pulses (classic rows)",
                 id: "classicpulses",
-                type: "bool"
+                type: "bool",
+                checked: true
             },
             {
                 name: "Use CPU hits for row pulses",
                 id: "cpupulses",
-                type: "bool"
+                type: "bool",
+                checked: true
             },
             {
                 name: "Also chart release (held beats)",
@@ -156,7 +159,7 @@ function validGameChart(game, chart, filename, settings={}) {
     gameData.settings.forEach(o => {
         let optionData = ""
         switch (o.type) {
-            case "bool": optionData = `<label><input setting="${o.id}" type="checkbox"><span></span></label><p>${o.name}</p>`; break;
+            case "bool": optionData = `<label><input setting="${o.id}" ${o.checked ? "checked " : ""}type="checkbox"><span></span></label><p>${o.name}</p>`; break;
             case "number": optionData = `<p>${o.name}</p> <input style="width: 75px; margin-left: 15px" setting="${o.id}" type="number" value="${isNaN(o.default) ? "" : o.default}"> <p>${o.unit || ""}</p>`; break;
             case "select":
                 let selectData = typeof o.options === "string" ? settings[o.options] : o.options
@@ -171,7 +174,7 @@ function validGameChart(game, chart, filename, settings={}) {
 
 function invalidGameChart(error) {
     $('#loadingMenu').hide()
-    alert("Error! " + error)
+    alert("Error!\n" + error)
 }
 
 // validate if it's actually a chart for that game (wip)
@@ -181,7 +184,7 @@ function validateGameChart(data) {
     let reader = new FileReader()
 
     reader.onload = function() {
-        let chartData = reader.result.replace(/\r/g, "") // remove return chars
+        let chartData = reader.result.replace(/(\r|\0)/g, "") // remove return chars and null chars
         switch (data.game) {
             case "rd":
                 // remove trailing commas from rdlevel file
@@ -196,12 +199,12 @@ function validateGameChart(data) {
                // .trim()
 
                 try { return validGameChart(data.game, JSON.parse(chartData), data.file.name) }
-                catch(e) { console.log(chartData); console.log(e); return invalidGameChart("Invalid JSON")
+                catch(e) { console.log(chartData); console.error(e); return invalidGameChart("Invalid JSON")
             }
     
             case "fnf":
                 try { return validGameChart(data.game, JSON.parse(chartData), data.file.name) }
-                catch(e) { console.log(e); return invalidGameChart("Invalid JSON") }
+                catch(e) { console.error(e); return invalidGameChart("Invalid JSON") }
 
             case "sm":
                 let foundDifficulties = chartData.match(new RegExp(smDifficultyRegex, "g"))
@@ -219,7 +222,7 @@ function confirmGameImport() {
     if (!songFile) importGameChart()
     else {
         let songReader = new FileReader()
-        songReader.onload = function() { importGameChart({data: songReader.result.replace("data:video", "data:audo"), name: songFile.name}) }
+        songReader.onload = function() { importGameChart({data: songReader.result.replace("data:video", "data:audio"), name: songFile.name}) }
         songReader.readAsDataURL(songFile)
     }
 }
@@ -337,6 +340,10 @@ function importGameChart(providedSong={}) {
                 "subdivision": 4,
                 "offset": song.offset,
                 "volume": song.volume
+            }
+
+            if (chartSettings.cpupulses && (chartSettings.classicpulses || chartSettings.oneshotpulses)) {
+                chart.metadata.cpuClap = "shaker";
             }
 
             let freetimes = []
@@ -482,7 +489,6 @@ function importGameChart(providedSong={}) {
             let smChart = gameChart.chart
             let bpmChanges = smChart.match(/#BPMS:((.|\n)+?);/)[1]
             if (!bpmChanges) throw new Error("No BPM!")
-            console.log(bpmChanges)
             bpmChanges = bpmChanges.replace(/\s/g, "").split(",").map(x => x.split("=")).map(n => ({beat: +n[0], bpm: +n[1]}))
             bpmChanges.forEach(x => {
                 if (x.beat > 0) chart.actions.push({ "beat": x.beat, "type": "bpm", "val": x.bpm })
@@ -547,7 +553,7 @@ function importGameChart(providedSong={}) {
     } // end of try
 
     catch(e) {
-        console.log(e)
+        console.error(e)
         alert("There was an error while trying to convert this chart!\n" + e)
         $('#loadingMenu').hide()
         gameChart = null

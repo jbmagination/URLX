@@ -30,7 +30,7 @@ function newGame(...args) {
     if (typeof game == "object") game.selfdestruct()
     try { game = new Game(...args) }
     catch(e) {
-        console.log(e)
+        console.error(e)
         alert(`Something went wrong while trying to load that chart!\nErorr: ${e}`)
         game = new Game()
     }
@@ -45,13 +45,18 @@ function toSafe(beat, divide=1) {
 }
 
 // timestamp display - https://gist.github.com/vankasteelj/74ab7793133f4b257ea3
-function pad(num, size) { return ('000' + num).slice(size * -1); }
+function pad(num, size) { return num.toString().padStart(size, "0") }
 function timestamp(timeInSeconds) {
     time = Math.max(0, parseFloat(timeInSeconds)).toFixed(3),
     minutes = Math.floor(time / 60) % 60,
     seconds = Math.floor(time - minutes * 60),
     milliseconds = time.slice(-3);
     return minutes + ':' + pad(seconds, 2) + '.' + pad(milliseconds, 3);
+}
+
+// tofixed except it converts back to a number (removes long decimals)
+function fixed(num, places) {
+    return Number(num.toFixed(places))
 }
 
 // get the number of seconds between two beats with no bpm changes
@@ -63,7 +68,7 @@ function getSecsBetween(firstBeat, lastBeat, bpm) {
 
 // get twemoji svg from unicode
 function twemojiParse(str) {
-    return twemoji.parse(str, { folder: "svg", ext: '.svg' })
+    return twemoji.parse(str, { folder: "svg", ext: '.svg', className: 'twemoji' })
 }
 
 // get hit window size
