@@ -100,7 +100,7 @@ class Editor {
     }
 
     updateSongInfo() {
-        $('#chartName').val(this.game.chartName)
+        $('#chartNameInput').val(this.game.chartName)
         $('#songFilename').val(this.game.conductor.filename)
         $('#startingBPM').val(this.game.conductor.bpmChanges[0].bpm)
         $('#startingSubdiv').val(this.game.conductor.subdivisionChanges[0].subdivision)
@@ -176,6 +176,7 @@ class Editor {
     }
 
     firstSelected() {
+        if (!this.selectedBeats.length) return 0
         return Math.min(...this.selectedBeats)
     }
 
@@ -298,7 +299,7 @@ class Editor {
     }
 
     chartName(ext) {
-        return (safeFilename($('#chartName').val()) || "untitled") + (ext ? ".urlx" : "")
+        return (safeFilename($('#chartNameInput').val()) || "untitled") + (ext ? ".urlx" : "")
     }
 
     async saveChart() {
@@ -372,7 +373,7 @@ class Editor {
             else {
                 let downloader = document.createElement('a');
                 downloader.href = URL.createObjectURL(new Blob([blob], {type: blobType}))
-                downloader.setAttribute("download", chartName + extension);
+                downloader.setAttribute("download", saveOptions.suggestedName);
                 document.body.appendChild(downloader);
                 downloader.click();
                 document.body.removeChild(downloader);

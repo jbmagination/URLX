@@ -10,6 +10,7 @@ class Game {
         this.conductor = new Conductor(this, chart, song) // music and timing
         this.editor = new Editor(this, saveLocation)
         this.feedback = { beat: 0, emoji: EMOJIS.feedback.none.icon, face: PLAYERSETTINGS.player } // emoji indicator for hits, misses, etc
+        this.frameOffset = { early: 0, late: 0 }
 
         this.notes = []
         let noteList = cloneObject(chart.notes || chart.events || []).map(x => new Note(this, x)).filter(x => x && x.beat && x.beat >= 1 && x.arrow).sort((a, b) => (a.beat - b.beat) || (a.auto - b.auto)) // clone chart and create note array
@@ -29,6 +30,7 @@ class Game {
         if (this.active) this.restart()
         this.active = true
         this.paused = false
+        this.frameOffset = { early: 0, late: 0 }
         this.conductor.reset(startingBeat)
         this.resetNotes()
         this.notes.filter(x => x.beat <= startingBeat).forEach(x => x.skipped = true)
@@ -39,18 +41,18 @@ class Game {
         $('input, button, select').blur()
     }
 
-    restart() {
+    restart(force) {
         this.active = false
         this.conductor.reset()
         this.resetNotes()
-        this.editor.stopPlaytest()
+        if (!force) this.editor.stopPlaytest()
 
         $('#startBtn').show()
         $('#stopBtn').hide()
     }
 
     selfdestruct() {
-        this.restart()
+        this.restart(true)
         Object.keys(this).forEach(k => {
             delete this[k]
         })
@@ -239,13 +241,16 @@ class Game {
         let misses = this.notes.filter(x => x.missed).length
         let offsetNotes = this.notes.filter(x => x.accuracy)
         let lastOffset = offsetNotes[offsetNotes.length - 1]
+        let earlyOffset = this.frameOffset.early
+        let lateOffset = this.frameOffset.late
 
         let logObj = {
             "Hits": hits,
             "Misses": misses,
             "Accuracy": (misses < 1 ? 100 : fixed((hits / (hits + misses) * 100), 2)) + "%",
             "Average Offset": offsetNotes.length ? Number((offsetNotes.map(x => x.accuracy).reduce((a, b) => a + b, 0) / offsetNotes.length * 1000).toFixed(2)) + " ms" : "-",
-            "Last Note Offset": lastOffset ? fixed((lastOffset.accuracy * 1000), 2) + " ms" : "-"
+            "Last Note Offset": lastOffset ? fixed((lastOffset.accuracy * 1000), 2) + " ms" : "-",
+            "Frame Offset": `${fixed(earlyOffset + lateOffset, 2)} (${fixed(earlyOffset, 2)} early + ${fixed(lateOffset, 2)} late)`
         }
 
         $('#gameplayStats').html(Object.entries(logObj).map(x => `<p><b>${x[0]}</b>: ${x[1]}</p>`))
