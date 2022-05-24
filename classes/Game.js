@@ -36,9 +36,9 @@ class Game {
         this.notes.filter(x => x.beat <= startingBeat).forEach(x => x.skipped = true)
         this.conductor.play()
 
-        $('#startBtn').hide()
-        $('#stopBtn').show()
-        $('input, button, select').blur()
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('stopBtn').style.display = '';
+        document.querySelectorAll('input, button, select').blur()
     }
 
     restart(force) {
@@ -47,8 +47,8 @@ class Game {
         this.resetNotes()
         if (!force) this.editor.stopPlaytest()
 
-        $('#startBtn').show()
-        $('#stopBtn').hide()
+        document.getElementById('startBtn').style.display = '';
+        document.getElementById('stopBtn').style.display = 'none';
     }
 
     selfdestruct() {
@@ -229,7 +229,7 @@ class Game {
         amount = +amount
         if (!amount || isNaN(amount) || amount < 1) amount = 1
         amount = Math.min(Math.round(amount), CONFIG.maxScrollMultiplier)
-        $('#scrollMultiplier').val(amount)
+        document.getElementById('scrollMultiplier') = amount
         if (this.scrollMultiplier == amount) return
         this.scrollMultiplier = amount
         this.updatePath()
@@ -253,7 +253,7 @@ class Game {
             "Frame Offset": `${fixed(earlyOffset + lateOffset, 2)} (${fixed(earlyOffset, 2)} early + ${fixed(lateOffset, 2)} late)`
         }
 
-        $('#gameplayStats').html(Object.entries(logObj).map(x => `<p><b>${x[0]}</b>: ${x[1]}</p>`))
+        document.getElementById('gameplayStats').innerHTML = Object.entries(logObj).map(x => `<p><b>${x[0]}</b>: ${x[1]}</p>`)
     }
 
 
