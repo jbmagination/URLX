@@ -492,7 +492,7 @@
 
 </body>
 </html>
-<script type="text/javascript" src="./libraries/jquery.js"></script>
+<!-- NO JQUERY !!!!!!!!!!!!! <script type="text/javascript" src="./libraries/jquery.js"></script> !!!!!!!!!!!!! NO JQUERY -->
 <script type="text/javascript" src="./libraries/howler.js"></script>
 <script type="text/javascript" src="./libraries/jszip.js"></script>
 <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
@@ -519,6 +519,8 @@
     let game = new Game();
 
     // popup closing
-    $(document).on('click', '.popup:not(.importantPopup)', function(e) { if ($(e.target).is('.popup')) $('.popup').hide() } );
+    document.on('click', '.popup:not(.importantPopup)', function(e) {
+        if (e.target.matches(e.target, '.popup')) document.getElementByClassName("popup").style.display = "none" 
+    });
 
 </script>
