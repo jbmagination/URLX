@@ -6,7 +6,7 @@ class Editor {
     }
 
     drawChart(select) {
-        $('#chart').empty()
+        while(document.getElementById('chart').firstChild) document.getElementById('chart').removeChild(document.getElementById('chart').firstChild);
         this.deselectAll()
 
         let allNotes = this.game.getAllNotes()
@@ -18,11 +18,11 @@ class Editor {
             let subdivBeats = thisBeat.map(x => {
                 let bpmChange = this.game.conductor.bpmChanges.find(z => x.beat > 1 && z.beat == x.beat)
                 let subdivChange = this.game.conductor.subdivisionChanges.find(z => x.beat > 1 && z.beat == x.beat)
-                let noteElement = $(`<div class="note" beat="${x.beat}" note="${x.note || "-"}">${this.emojiElement(x.note)}</div>"`)
+                let noteElement = `<div class="note" beat="${x.beat}" note="${x.note || "-"}">${this.emojiElement(x.note)}</div>"`
                 if (x.note && x.data.auto) noteElement.addClass("auto")
-                if (bpmChange) noteElement.attr("bpm", bpmChange.bpm)
-                if (subdivChange) noteElement.attr("subdivision", subdivChange.subdivision)
-                return noteElement.prop("outerHTML")
+                if (bpmChange) noteElement.getAttribute("bpm", bpmChange.bpm)
+                if (subdivChange) noteElement.getAttribute("subdivision", subdivChange.subdivision)
+                return noteElement.outerHTML
             }).join("")
 
             if (thisBeat.length != lastSubdiv) {
